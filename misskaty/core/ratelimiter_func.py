@@ -1,12 +1,6 @@
 from typing import Union
 
-from pyrate_limiter import (
-    BucketFullException,
-    Duration,
-    Limiter,
-    InMemoryBucket,
-    Rate,
-)
+from pyrate_limiter import BucketFullException, Duration, InMemoryBucket, Limiter, Rate
 
 
 class RateLimiter:
@@ -26,12 +20,7 @@ class RateLimiter:
         # 300 requests per day
         self.daily_rate = Rate(300, Duration.DAY)
 
-        self.limiter = Limiter([
-            self.minute_rate,
-            self.hourly_rate,
-            self.daily_rate
-        ]
-        )
+        self.limiter = Limiter([self.minute_rate, self.hourly_rate, self.daily_rate])
 
     async def acquire(self, userid: Union[int, str]) -> bool:
         """
