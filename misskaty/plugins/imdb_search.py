@@ -3,13 +3,13 @@
 # * @projectName   MissKatyPyro
 # * Copyright ©YasirPedia All rights reserved
 import contextlib
-import httpx
 import json
 import logging
 import re
 import sys
 from urllib.parse import quote_plus
 
+import httpx
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 from pykeyboard import InlineButton, InlineKeyboard
@@ -148,7 +148,9 @@ async def imdb_search_id(kueri, message):
                 return await k.edit_caption(
                     f"⛔️ Tidak ditemukan hasil untuk kueri: <code>{kueri}</code>"
                 )
-            msg += f"🎬 Ditemukan ({len(res)}) hasil untuk kueri: <code>{kueri}</code>\n\n"
+            msg += (
+                f"🎬 Ditemukan ({len(res)}) hasil untuk kueri: <code>{kueri}</code>\n\n"
+            )
             for num, movie in enumerate(res, start=1):
                 title = movie.get("l")
                 if year := movie.get("yr"):
@@ -181,7 +183,10 @@ async def imdb_search_id(kueri, message):
             buttons.add(*BTN)
             await k.edit_caption(msg, reply_markup=buttons)
         except httpx.HTTPError as exc:
-            await k.edit_caption(f"HTTP Exception for IMDB Search - <code>{exc}</code>", disable_web_page_preview=True)
+            await k.edit_caption(
+                f"HTTP Exception for IMDB Search - <code>{exc}</code>",
+                disable_web_page_preview=True,
+            )
         except (MessageIdInvalid, MessageNotModified):
             pass
         except Exception as err:
@@ -243,7 +248,10 @@ async def imdb_search_en(kueri, message):
             buttons.add(*BTN)
             await k.edit_caption(msg, reply_markup=buttons)
         except httpx.HTTPError as exc:
-            await k.edit_caption(f"HTTP Exception for IMDB Search - <code>{exc}</code>", disable_web_page_preview=True)
+            await k.edit_caption(
+                f"HTTP Exception for IMDB Search - <code>{exc}</code>",
+                disable_web_page_preview=True,
+            )
         except (MessageIdInvalid, MessageNotModified):
             pass
         except Exception as err:
@@ -305,13 +313,18 @@ async def imdbcari(_, query: CallbackQuery):
                         InlineKeyboardButton(
                             text="🚩 Language", callback_data=f"imdbset#{uid}"
                         ),
-                        InlineKeyboardButton(text="❌ Close", callback_data=f"close#{uid}"),
+                        InlineKeyboardButton(
+                            text="❌ Close", callback_data=f"close#{uid}"
+                        ),
                     )
                 )
                 buttons.add(*BTN)
                 await query.message.edit_caption(msg, reply_markup=buttons)
             except httpx.HTTPError as exc:
-                await query.message.edit_caption(f"HTTP Exception for IMDB Search - <code>{exc}</code>", disable_web_page_preview=True)
+                await query.message.edit_caption(
+                    f"HTTP Exception for IMDB Search - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
             except (MessageIdInvalid, MessageNotModified):
                 pass
             except Exception as err:
@@ -362,13 +375,18 @@ async def imdbcari(_, query: CallbackQuery):
                         InlineKeyboardButton(
                             text="🚩 Language", callback_data=f"imdbset#{uid}"
                         ),
-                        InlineKeyboardButton(text="❌ Close", callback_data=f"close#{uid}"),
+                        InlineKeyboardButton(
+                            text="❌ Close", callback_data=f"close#{uid}"
+                        ),
                     )
                 )
                 buttons.add(*BTN)
                 await query.message.edit_caption(msg, reply_markup=buttons)
             except httpx.HTTPError as exc:
-                await query.message.edit_caption(f"HTTP Exception for IMDB Search - <code>{exc}</code>", disable_web_page_preview=True)
+                await query.message.edit_caption(
+                    f"HTTP Exception for IMDB Search - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
             except (MessageIdInvalid, MessageNotModified):
                 pass
             except Exception as err:
@@ -407,7 +425,9 @@ async def imdb_id_callback(self: Client, query: CallbackQuery):
                 res_str += "\n"
             if durasi := sop.select('li[data-testid="title-techspec_runtime"]'):
                 durasi = (
-                    durasi[0].find(class_="ipc-metadata-list-item__content-container").text
+                    durasi[0]
+                    .find(class_="ipc-metadata-list-item__content-container")
+                    .text
                 )
                 res_str += f"<b>Durasi:</b> <code>{GoogleTranslator('auto', 'id').translate(durasi)}</code>\n"
             if kategori := r_json.get("contentRating"):
@@ -425,9 +445,7 @@ async def imdb_id_callback(self: Client, query: CallbackQuery):
                 rilis_url = release[0].find(
                     class_="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"
                 )["href"]
-                res_str += (
-                    f"<b>Rilis:</b> <a href='https://www.imdb.com{rilis_url}'>{rilis}</a>\n"
-                )
+                res_str += f"<b>Rilis:</b> <a href='https://www.imdb.com{rilis_url}'>{rilis}</a>\n"
             if genre := r_json.get("genre"):
                 genre = "".join(
                     f"{GENRES_EMOJI[i]} #{i.replace('-', '_').replace(' ', '_')}, "
@@ -466,19 +484,24 @@ async def imdb_id_callback(self: Client, query: CallbackQuery):
                 )
                 res_str += f"<b>Penulis:</b> {creator[:-2]}\n"
             if actors := r_json.get("actor"):
-                actor = "".join(f"<a href='{i['url']}'>{i['name']}</a>, " for i in actors)
+                actor = "".join(
+                    f"<a href='{i['url']}'>{i['name']}</a>, " for i in actors
+                )
                 res_str += f"<b>Pemeran:</b> {actor[:-2]}\n\n"
             if deskripsi := r_json.get("description"):
                 summary = GoogleTranslator("auto", "id").translate(deskripsi)
                 res_str += f"<b>📜 Plot: </b> <code>{summary}</code>\n\n"
             if keywd := r_json.get("keywords"):
                 key_ = "".join(
-                    f"#{i.replace(' ', '_').replace('-', '_')}, " for i in keywd.split(",")
+                    f"#{i.replace(' ', '_').replace('-', '_')}, "
+                    for i in keywd.split(",")
                 )
                 res_str += f"<b>🔥 Kata Kunci:</b> {key_[:-2]} \n"
             if award := sop.select('li[data-testid="award_information"]'):
                 awards = (
-                    award[0].find(class_="ipc-metadata-list-item__list-content-item").text
+                    award[0]
+                    .find(class_="ipc-metadata-list-item__list-content-item")
+                    .text
                 )
                 res_str += f"<b>🏆 Penghargaan:</b> <code>{GoogleTranslator('auto', 'id').translate(awards)}</code>\n"
             else:
@@ -526,15 +549,22 @@ async def imdb_id_callback(self: Client, query: CallbackQuery):
                         res_str, parse_mode=enums.ParseMode.HTML, reply_markup=markup
                     )
                 except Exception as err:
-                    LOGGER.error(f"Terjadi error saat menampilkan data IMDB. ERROR: {err}")
+                    LOGGER.error(
+                        f"Terjadi error saat menampilkan data IMDB. ERROR: {err}"
+                    )
             else:
                 await query.message.edit_caption(
                     res_str, parse_mode=enums.ParseMode.HTML, reply_markup=markup
                 )
         except httpx.HTTPError as exc:
-            await query.message.edit_caption(f"HTTP Exception for IMDB Search - <code>{exc}</code>", disable_web_page_preview=True)
+            await query.message.edit_caption(
+                f"HTTP Exception for IMDB Search - <code>{exc}</code>",
+                disable_web_page_preview=True,
+            )
         except AttributeError:
-            await query.message.edit_caption("Maaf, gagal mendapatkan info data dari IMDB.")
+            await query.message.edit_caption(
+                "Maaf, gagal mendapatkan info data dari IMDB."
+            )
         except (MessageNotModified, MessageIdInvalid):
             pass
 
@@ -569,7 +599,9 @@ async def imdb_en_callback(self: Client, query: CallbackQuery):
                 res_str += "\n"
             if durasi := sop.select('li[data-testid="title-techspec_runtime"]'):
                 durasi = (
-                    durasi[0].find(class_="ipc-metadata-list-item__content-container").text
+                    durasi[0]
+                    .find(class_="ipc-metadata-list-item__content-container")
+                    .text
                 )
                 res_str += f"<b>Duration:</b> <code>{durasi}</code>\n"
             if kategori := r_json.get("contentRating"):
@@ -587,9 +619,7 @@ async def imdb_en_callback(self: Client, query: CallbackQuery):
                 rilis_url = release[0].find(
                     class_="ipc-metadata-list-item__list-content-item ipc-metadata-list-item__list-content-item--link"
                 )["href"]
-                res_str += (
-                    f"<b>Rilis:</b> <a href='https://www.imdb.com{rilis_url}'>{rilis}</a>\n"
-                )
+                res_str += f"<b>Rilis:</b> <a href='https://www.imdb.com{rilis_url}'>{rilis}</a>\n"
             if genre := r_json.get("genre"):
                 genre = "".join(
                     f"{GENRES_EMOJI[i]} #{i.replace('-', '_').replace(' ', '_')}, "
@@ -617,7 +647,8 @@ async def imdb_en_callback(self: Client, query: CallbackQuery):
             res_str += "\n<b>🙎 Cast Info:</b>\n"
             if r_json.get("director"):
                 director = "".join(
-                    f"<a href='{i['url']}'>{i['name']}</a>, " for i in r_json["director"]
+                    f"<a href='{i['url']}'>{i['name']}</a>, "
+                    for i in r_json["director"]
                 )
                 res_str += f"<b>Director:</b> {director[:-2]}\n"
             if r_json.get("creator"):
@@ -642,7 +673,9 @@ async def imdb_en_callback(self: Client, query: CallbackQuery):
                 res_str += f"<b>🔥 Keywords:</b> {key_[:-2]} \n"
             if award := sop.select('li[data-testid="award_information"]'):
                 awards = (
-                    award[0].find(class_="ipc-metadata-list-item__list-content-item").text
+                    award[0]
+                    .find(class_="ipc-metadata-list-item__list-content-item")
+                    .text
                 )
                 res_str += f"<b>🏆 Awards:</b> <code>{awards}</code>\n"
             else:
@@ -696,7 +729,10 @@ async def imdb_en_callback(self: Client, query: CallbackQuery):
                     res_str, parse_mode=enums.ParseMode.HTML, reply_markup=markup
                 )
         except httpx.HTTPError as exc:
-            await query.message.edit_caption(f"HTTP Exception for IMDB Search - <code>{exc}</code>", disable_web_page_preview=True)
+            await query.message.edit_caption(
+                f"HTTP Exception for IMDB Search - <code>{exc}</code>",
+                disable_web_page_preview=True,
+            )
         except AttributeError:
             await query.message.edit_caption("Sorry, failed getting data from IMDB.")
         except (MessageNotModified, MessageIdInvalid):
