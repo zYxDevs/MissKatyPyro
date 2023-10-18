@@ -203,7 +203,7 @@ async def banFunc(client, message, strings):
     try:
         user_id, reason = await extract_user_and_reason(message, sender_chat=True)
     except UsernameNotOccupied:
-        return await message.reply_msg("Sorry, i didn't know that user.") 
+        return await message.reply_msg("Sorry, i didn't know that user.")
 
     if not user_id:
         return await message.reply_text(strings("user_not_found"))
@@ -551,7 +551,9 @@ async def mute(client, message, strings):
         return
     if reason:
         msg += strings("banned_reason").format(reas=reason)
-    await message.chat.restrict_member(user_id, permissions=ChatPermissions(all_perms=False))
+    await message.chat.restrict_member(
+        user_id, permissions=ChatPermissions(all_perms=False)
+    )
     await message.reply_text(msg, reply_markup=keyboard)
 
 
