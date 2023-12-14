@@ -178,7 +178,7 @@ async def locks_func(_, message):
                 chat_id,
                 ChatPermissions(
                     all_perms=True,
-                )
+                ),
             )
             await message.reply(f"Unlocked Everything in {message.chat.title}")
         except ChatAdminRequired:

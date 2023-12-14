@@ -6,7 +6,7 @@ import asyncio
 import html
 import random
 
-from openai import AsyncOpenAI, APIConnectionError, RateLimitError, APIStatusError
+from openai import APIConnectionError, APIStatusError, AsyncOpenAI, RateLimitError
 from pyrogram import filters
 from pyrogram.errors import MessageTooLong
 from pyrogram.types import Message
@@ -90,6 +90,8 @@ async def openai_chatbot(_, ctx: Message, strings):
     except RateLimitError as e:
         await msg.edit_msg("A 429 status code was received; we should back off a bit.")
     except APIStatusError as e:
-        await msg.edit_msg(f"Another {e.status_code} status code was received with response {e.response}")
+        await msg.edit_msg(
+            f"Another {e.status_code} status code was received with response {e.response}"
+        )
     except Exception as e:
         await msg.edit_msg(f"ERROR: {e}")
