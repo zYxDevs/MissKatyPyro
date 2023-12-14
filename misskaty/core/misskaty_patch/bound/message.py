@@ -21,6 +21,7 @@ from pyrogram.types import Message
 
 LOGGER = getLogger("MissKaty")
 
+
 @property
 def parse_cmd(msg):
     if len(msg.command) > 1:

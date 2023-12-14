@@ -25,8 +25,8 @@ import re
 from datetime import datetime, timedelta
 
 from pyrogram import filters
-from pyrogram.types import ChatPermissions
 from pyrogram.errors import ChatAdminRequired
+from pyrogram.types import ChatPermissions
 
 from database.blacklist_db import (
     delete_blacklist_filter,
@@ -113,7 +113,9 @@ async def blacklist_filters_re(self, message):
                     until_date=datetime.now() + timedelta(hours=1),
                 )
             except ChatAdminRequired:
-                return await message.reply("Please give me admin permissions to blacklist user", quote=False)
+                return await message.reply(
+                    "Please give me admin permissions to blacklist user", quote=False
+                )
             except Exception as err:
                 self.log.info(f"ERROR Blacklist Chat: ID = {chat_id}, ERR = {err}")
                 return

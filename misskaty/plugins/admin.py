@@ -34,7 +34,7 @@ from pyrogram.errors import (
     PeerIdInvalid,
     UsernameNotOccupied,
 )
-from pyrogram.types import ChatPermissions, ChatMember, ChatPrivileges, Message
+from pyrogram.types import ChatMember, ChatPermissions, ChatPrivileges, Message
 
 from database.warn_db import add_warn, get_warn, remove_warns
 from misskaty import app
@@ -204,7 +204,7 @@ async def banFunc(client, message, strings):
     try:
         user_id, reason = await extract_user_and_reason(message, sender_chat=True)
     except UsernameNotOccupied:
-        return await message.reply_msg("Sorry, i didn't know that user.") 
+        return await message.reply_msg("Sorry, i didn't know that user.")
 
     if not user_id:
         return await message.reply_text(strings("user_not_found"))
@@ -557,7 +557,9 @@ async def mute(client, message, strings):
         return
     if reason:
         msg += strings("banned_reason").format(reas=reason)
-    await message.chat.restrict_member(user_id, permissions=ChatPermissions(all_perms=False))
+    await message.chat.restrict_member(
+        user_id, permissions=ChatPermissions(all_perms=False)
+    )
     await message.reply_text(msg, reply_markup=keyboard)
 
 
@@ -839,21 +841,28 @@ async def set_chat_photo(_, ctx: Message):
     os.remove(photo)
 
 
-@app.on_message(filters.group & filters.command('mentionall', COMMAND_HANDLER))
+@app.on_message(filters.group & filters.command("mentionall", COMMAND_HANDLER))
 async def mentionall(app: Client, msg: Message):
     NUM = 4
     user = await msg.chat.get_member(msg.from_user.id)
-    if user.status in (enums.ChatMemberStatus.OWNER, enums.ChatMemberStatus.ADMINISTRATOR):
+    if user.status in (
+        enums.ChatMemberStatus.OWNER,
+        enums.ChatMemberStatus.ADMINISTRATOR,
+    ):
         total = []
         async for member in app.get_chat_members(msg.chat.id):
             member: ChatMember
             if member.user.username:
-                total.append(f'@{member.user.username}')
+                total.append(f"@{member.user.username}")
             else:
                 total.append(member.user.mention())
 
         for i in range(0, len(total), NUM):
-            message = ' '.join(total[i:i+NUM])
-            await app.send_message(msg.chat.id, message, message_thread_id=msg.message_thread_id)
+            message = " ".join(total[i : i + NUM])
+            await app.send_message(
+                msg.chat.id, message, message_thread_id=msg.message_thread_id
+            )
     else:
-        await app.send_message(msg.chat.id, 'Admins only can do that !', reply_to_message_id=msg.id)
+        await app.send_message(
+            msg.chat.id, "Admins only can do that !", reply_to_message_id=msg.id
+        )
