@@ -15,6 +15,7 @@ from time import time
 from typing import Any, Optional, Tuple
 
 import aiohttp
+import contextlib
 import cloudscraper
 import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -27,7 +28,7 @@ from psutil import net_io_counters, virtual_memory
 from pyrogram import Client
 from pyrogram import __version__ as pyrover
 from pyrogram import enums, filters
-from pyrogram.errors import ChatSendPhotosForbidden, FloodWait, MessageTooLong, PeerIdInvalid
+from pyrogram.errors import ChatSendPhotosForbidden, FloodWait, MessageTooLong, PeerIdInvalid, ChatSendPlainForbidden
 from pyrogram.raw.types import UpdateBotStopped
 from pyrogram.types import (
     InlineKeyboardButton,
@@ -129,7 +130,7 @@ async def donate(self: Client, ctx: Message):
             "https://img.yasirweb.eu.org/file/9427d61d6968b8ee4fb2f.jpg",
             caption=f"Hi {ctx.from_user.mention}, If you find this bot useful, you can make a donation to the account below. Because this bot server uses VPS and is not free. Thank You..\n\n<b>Indonesian Payment:</b>\n<b>QRIS:</b> https://img.yasirweb.eu.org/file/b1c86973ae4e55721983a.jpg (Yasir Store)\n<b>Mayar:</b> https://yasirarism.mayar.link/payme\n<b>Bank Jago:</b> 109641845083 (Yasir Aris M)\n\nFor international people can use PayPal to support me or via GitHub Sponsor:\nhttps://paypal.me/yasirarism\nhttps://github.com/sponsors/yasirarism\n\n<b>Source:</b> @BeriKopi",
         )
-    except ChatSendPhotosForbidden:
+    except (ChatSendPlainForbidden, ChatSendPhotosForbidden):
         await self.send_message(LOG_CHANNEL, f"❗️ <b>WARNING</b>\nI'm leaving from {ctx.chat.id} since i didn't have sufficient admin permissions.")
         await ctx.chat.leave()
 
@@ -186,7 +187,7 @@ async def server_stats(_, ctx: Message) -> "Message":
 
     neofetch = (await shell_exec("neofetch --stdout"))[0]
 
-    caption = f"<b>{BOT_NAME} {misskaty_version} is Up and Running successfully.</b>\n\n<code>{neofetch}</code>\n\n**OS Uptime:** <code>{osuptime}</code>\n<b>Bot Uptime:</b> <code>{currentTime}</code>\n**Bot Usage:** <code>{botusage}</code>\n\n**Total Space:** <code>{disk_total}</code>\n**Free Space:** <code>{disk_free}</code>\n\n**Download:** <code>{download}</code>\n**Upload:** <code>{upload}</code>\n\n<b>Pyrogram Version</b>: <code>{pyrover}</code>\n<b>Python Version</b>: <code>{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]} {sys.version_info[3].title()}</code>"
+    caption = f"<b>{BOT_NAME} {misskaty_version} is Up and Running successfully.</b>\n\n<code>{neofetch}</code>\n\n**OS Uptime:** <code>{osuptime}</code>\n<b>Bot Uptime:</b> <code>{currentTime}</code>\n**Bot Usage:** <code>{botusage}</code>\n\n**Total Space:** <code>{disk_total}</code>\n**Free Space:** <code>{disk_free}</code>\n\n**Download:** <code>{download}</code>\n**Upload:** <code>{upload}</code>\n\n<b>PyroFork Version</b>: <code>{pyrover}</code>\n<b>Python Version</b>: <code>{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]} {sys.version_info[3].title()}</code>"
 
     start = datetime.now()
     msg = await ctx.reply_photo(
@@ -387,7 +388,7 @@ async def shell_cmd(_, ctx: Message, strings):
     & filters.user(SUDO)
 )
 @app.on_edited_message(
-    (filters.command(["ev", "run", "meval"]) | filters.regex(r"app.run\(\)$"))
+    (filters.command(["ev", "run", "meval"], COMMAND_HANDLER) | filters.regex(r"app.run\(\)$"))
     & filters.user(SUDO)
 )
 @user.on_message(filters.command(["ev", "run", "meval"], ".") & filters.me)
@@ -401,7 +402,7 @@ async def cmd_eval(self: Client, ctx: Message, strings) -> Optional[str]:
         else await ctx.reply_msg(strings("run_eval"), quote=True)
     )
     code = (
-        ctx.text.split(maxsplit=1)[1] if ctx.command else ctx.text.split("\napp.run()")[0]
+        ctx.text.split(maxsplit=1)[1] if ctx.command else msg.split("\napp.run()")[0]
     )
     out_buf = io.StringIO()
     out = ""
@@ -435,15 +436,15 @@ async def cmd_eval(self: Client, ctx: Message, strings) -> Optional[str]:
             "cloudscraper": cloudscraper,
             "json": json,
             "aiohttp": aiohttp,
-            "print": _print,
+            "p": _print,
             "send": send,
             "stdout": out_buf,
             "traceback": traceback,
             "fetch": fetch,
-            "replied": ctx.reply_to_message,
+            "r": ctx.reply_to_message,
             "requests": requests,
             "soup": BeautifulSoup,
-            "help": _help,
+            "h": _help,
         }
         eval_vars.update(var)
         eval_vars.update(teskode)

@@ -34,7 +34,7 @@ from pyrogram.errors import (
     PeerIdInvalid,
     UsernameNotOccupied,
 )
-from pyrogram.types import ChatPermissions, ChatPrivileges, Message
+from pyrogram.types import ChatPermissions, ChatMember, ChatPrivileges, Message
 
 from database.warn_db import add_warn, get_warn, remove_warns
 from misskaty import app
@@ -85,6 +85,7 @@ __HELP__ = """
 /set_chat_title - Change The Name Of A Group/Channel.
 /set_chat_photo - Change The PFP Of A Group/Channel.
 /set_user_title - Change The Administrator Title Of An Admin.
+/mentionall - Mention all members in a groups.
 """
 
 
@@ -254,9 +255,9 @@ async def banFunc(client, message, strings):
     keyboard = ikb({"🚨 Unban 🚨": f"unban_{user_id}"})
     try:
         await message.chat.ban_member(user_id)
-        await message.reply_text(msg, reply_markup=keyboard)
-    except Exception as err:
-        await message.reply(f"ERROR: {err}")
+        await message.reply_msg(msg, reply_markup=keyboard)
+    except ChatAdminRequired:
+        await message.reply("Please give me permission to banned members..!!!")
 
 
 # Unban members
@@ -275,8 +276,6 @@ async def unban_func(_, message, strings):
 
     if len(message.command) == 2:
         user = message.text.split(None, 1)[1]
-        if not user.startswith("@"):
-            user = int(user)
     elif len(message.command) == 1 and reply:
         user = message.reply_to_message.from_user.id
     else:
@@ -287,6 +286,8 @@ async def unban_func(_, message, strings):
         await message.reply_msg(strings("unban_success").format(umention=umention))
     except PeerIdInvalid:
         await message.reply_msg(strings("unknown_id", context="general"))
+    except ChatAdminRequired:
+        await message.reply("Please give me permission to unban members..!!!")
 
 
 # Ban users listed in a message
@@ -407,43 +408,48 @@ async def promoteFunc(client, message, strings):
         return await message.reply(strings("invalid_id_uname"))
     if not user_id:
         return await message.reply_text(strings("user_not_found"))
-    bot = await client.get_chat_member(message.chat.id, client.me.id)
+    bot = (await client.get_chat_member(message.chat.id, client.me.id)).privileges
     if user_id == client.me.id:
-        return await message.reply_text(strings("promote_self_err"))
-    if not bot.privileges.can_promote_members:
-        return await message.reply_text(strings("no_promote_perm"))
-    if message.command[0][0] == "f":
+        return await message.reply_msg(strings("promote_self_err"))
+    if not bot:
+        return await message.reply_msg("I'm not an admin in this chat.")
+    if not bot.can_promote_members:
+        return await message.reply_msg(strings("no_promote_perm"))
+    try:
+        if message.command[0][0] == "f":
+            await message.chat.promote_member(
+                user_id=user_id,
+                privileges=ChatPrivileges(
+                    can_change_info=bot.can_change_info,
+                    can_invite_users=bot.can_invite_users,
+                    can_delete_messages=bot.can_delete_messages,
+                    can_restrict_members=bot.can_restrict_members,
+                    can_pin_messages=bot.can_pin_messages,
+                    can_promote_members=bot.can_promote_members,
+                    can_manage_chat=bot.can_manage_chat,
+                    can_manage_video_chats=bot.can_manage_video_chats,
+                ),
+            )
+            return await message.reply_text(
+                strings("full_promote").format(umention=umention)
+            )
+
         await message.chat.promote_member(
             user_id=user_id,
             privileges=ChatPrivileges(
-                can_change_info=bot.privileges.can_change_info,
-                can_invite_users=bot.privileges.can_invite_users,
-                can_delete_messages=bot.privileges.can_delete_messages,
-                can_restrict_members=bot.privileges.can_restrict_members,
-                can_pin_messages=bot.privileges.can_pin_messages,
-                can_promote_members=bot.privileges.can_promote_members,
-                can_manage_chat=bot.privileges.can_manage_chat,
-                can_manage_video_chats=bot.privileges.can_manage_video_chats,
+                can_change_info=False,
+                can_invite_users=bot.can_invite_users,
+                can_delete_messages=bot.can_delete_messages,
+                can_restrict_members=bot.can_restrict_members,
+                can_pin_messages=bot.can_pin_messages,
+                can_promote_members=False,
+                can_manage_chat=bot.can_manage_chat,
+                can_manage_video_chats=bot.can_manage_video_chats,
             ),
         )
-        return await message.reply_text(
-            strings("full_promote").format(umention=umention)
-        )
-
-    await message.chat.promote_member(
-        user_id=user_id,
-        privileges=ChatPrivileges(
-            can_change_info=False,
-            can_invite_users=bot.privileges.can_invite_users,
-            can_delete_messages=bot.privileges.can_delete_messages,
-            can_restrict_members=bot.privileges.can_restrict_members,
-            can_pin_messages=bot.privileges.can_pin_messages,
-            can_promote_members=False,
-            can_manage_chat=bot.privileges.can_manage_chat,
-            can_manage_video_chats=bot.privileges.can_manage_video_chats,
-        ),
-    )
-    await message.reply_text(strings("normal_promote").format(umention=umention))
+        await message.reply_msg(strings("normal_promote").format(umention=umention))
+    except Exception as err:
+        await message.reply_msg(err)
 
 
 # Demote Member
@@ -831,3 +837,23 @@ async def set_chat_photo(_, ctx: Message):
     except Exception as err:
         await ctx.reply(f"Failed changed group photo. ERROR: {err}")
     os.remove(photo)
+
+
+@app.on_message(filters.group & filters.command('mentionall', COMMAND_HANDLER))
+async def mentionall(app: Client, msg: Message):
+    NUM = 4
+    user = await msg.chat.get_member(msg.from_user.id)
+    if user.status in (enums.ChatMemberStatus.OWNER, enums.ChatMemberStatus.ADMINISTRATOR):
+        total = []
+        async for member in app.get_chat_members(msg.chat.id):
+            member: ChatMember
+            if member.user.username:
+                total.append(f'@{member.user.username}')
+            else:
+                total.append(member.user.mention())
+
+        for i in range(0, len(total), NUM):
+            message = ' '.join(total[i:i+NUM])
+            await app.send_message(msg.chat.id, message, message_thread_id=msg.message_thread_id)
+    else:
+        await app.send_message(msg.chat.id, 'Admins only can do that !', reply_to_message_id=msg.id)

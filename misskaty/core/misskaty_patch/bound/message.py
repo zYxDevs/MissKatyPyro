@@ -21,11 +21,11 @@ from pyrogram.types import Message
 
 LOGGER = getLogger("MissKaty")
 
-Message.input = property(
-    lambda m: m.text[m.text.find(m.command[0]) + len(m.command[0]) + 1 :]
-    if len(m.command) > 1
-    else None
-)
+@property
+def parse_cmd(msg):
+    if len(msg.command) > 1:
+        return msg.text.split(None, 1)[1]
+    return None
 
 
 async def reply_text(
@@ -323,3 +323,4 @@ Message.edit_or_send_as_file = edit_or_send_as_file
 Message.reply_or_send_as_file = reply_or_send_as_file
 Message.reply_as_file = reply_as_file
 Message.delete_msg = delete
+Message.input = parse_cmd

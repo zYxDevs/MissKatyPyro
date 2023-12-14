@@ -1,10 +1,12 @@
 import logging
 import os
 import random
+import re
 import string
 import time
 from http.cookies import SimpleCookie
 from re import match as re_match
+from typing import Union
 from urllib.parse import urlparse
 
 import psutil
@@ -124,7 +126,7 @@ def get_provider(url):
     return pretty(netloc.split("."))
 
 
-async def search_jw(movie_name: str, locale: str):
+async def search_jw(movie_name: str, locale: Union[str, None] = "ID"):
     m_t_ = ""
     try:
         response = (
@@ -137,17 +139,40 @@ async def search_jw(movie_name: str, locale: str):
     if not response.get("results"):
         LOGGER.error("JustWatch API Error or got Rate Limited.")
         return m_t_
-    for item in response.get("results")["items"]:
-        if movie_name == item.get("title", ""):
-            offers = item.get("offers", [])
-            t_m_ = []
-            for offer in offers:
-                url = offer.get("urls").get("standard_web")
-                if url not in t_m_:
-                    p_o = get_provider(url)
-                    m_t_ += f"<a href='{url}'>{p_o}</a> | "
-                t_m_.append(url)
-            if m_t_ != "":
-                m_t_ = m_t_[:-2].strip()
-            break
+    for item in response["results"]["data"]["popularTitles"]["edges"]:
+        if item["node"]["content"]["title"] == movie_name:
+           t_m_ = []
+           for offer in item["node"].get("offers", []):
+             url = offer["standardWebURL"]
+             if url not in t_m_:
+                 p_o = get_provider(url)
+                 m_t_ += f"<a href='{url}'>{p_o}</a> | "
+             t_m_.append(url)
+        if m_t_ != "":
+            m_t_ = m_t_[:-2].strip()
+        break
     return m_t_
+
+
+def isValidURL(str):
+    # Regex to check valid URL 
+    regex = ("((http|https)://)(www.)?" +
+             "[a-zA-Z0-9@:%._\\+~#?&//=]" +
+             "{2,256}\\.[a-z]" +
+             "{2,6}\\b([-a-zA-Z0-9@:%" +
+             "._\\+~#?&//=]*)")
+     
+    # Compile the ReGex
+    p = re.compile(regex)
+ 
+    # If the string is empty 
+    # return false
+    if (str == None):
+        return False
+ 
+    # Return if the string 
+    # matched the ReGex
+    if(re.search(p, str)):
+        return True
+    else:
+        return False

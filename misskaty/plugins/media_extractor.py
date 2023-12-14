@@ -13,6 +13,7 @@ from time import time
 from urllib.parse import unquote
 
 from pyrogram import Client, filters
+from pyrogram.errors import ListenerTimeout
 from pyrogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -22,7 +23,6 @@ from pyrogram.types import (
 
 from misskaty import app
 from misskaty.core.decorator.errors import capture_err
-from misskaty.core.misskaty_patch.listen.listen import ListenerTimeout
 from misskaty.helper.human_read import get_readable_time
 from misskaty.helper.localization import use_chat_lang
 from misskaty.helper.pyro_progress import progress_for_pyrogram
@@ -113,14 +113,14 @@ async def ceksub(_, ctx: Message, strings):
         buttons.append(
             [InlineKeyboardButton(strings("cancel_btn"), f"close#{ctx.from_user.id}")]
         )
-        msg = await pesan.edit_msg(
+        await pesan.edit_msg(
             strings("press_btn_msg").format(timelog=get_readable_time(timelog)),
             reply_markup=InlineKeyboardMarkup(buttons),
         )
-        await msg.wait_for_click(from_user_id=ctx.from_user.id, timeout=30)
-    except ListenerTimeout:
-        await msg.edit_msg(strings("exp_task", context="general"))
-    except Exception:
+        #    await msg.wait_for_click(from_user_id=ctx.from_user.id, timeout=30)
+        # except ListenerTimeout:
+        #    await msg.edit_msg(strings("exp_task", context="general"))
+    except Exception as e:
         await pesan.edit_msg(strings("fail_extr_media"))
 
 
