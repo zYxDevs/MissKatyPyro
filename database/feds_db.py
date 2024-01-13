@@ -1,8 +1,9 @@
-import pytz
 from datetime import datetime
-from misskaty.vars import SUDO
-from database import dbname
 
+import pytz
+
+from database import dbname
+from misskaty.vars import SUDO
 
 fedsdb = dbname["federation"]
 
