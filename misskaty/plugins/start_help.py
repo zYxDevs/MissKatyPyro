@@ -20,7 +20,6 @@ from misskaty.helper import bot_sys_stats, paginate_modules
 from misskaty.helper.localization import use_chat_lang
 from misskaty.vars import COMMAND_HANDLER
 
-
 home_keyboard_pm = InlineKeyboardMarkup(
     [
         [
@@ -116,7 +115,8 @@ async def start(_, ctx: Message, strings):
                 reply_markup=InlineKeyboardMarkup(
                     [[InlineKeyboardButton("back", callback_data="help_back")]]
                 ),
-                disable_web_page_preview=True)
+                disable_web_page_preview=True,
+            )
         elif name == "help":
             text, keyb = await help_parser(ctx.from_user.first_name)
             await ctx.reply_msg(

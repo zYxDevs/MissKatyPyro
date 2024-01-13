@@ -5,13 +5,13 @@
  * Copyright @YasirPedia All rights reserved
 """
 import contextlib
-import httpx
 import logging
 import re
 import sys
 import traceback
 
 import cloudscraper
+import httpx
 from bs4 import BeautifulSoup
 from cachetools import TTLCache
 from pykeyboard import InlineButton, InlineKeyboard
@@ -20,7 +20,7 @@ from pyrogram.types import Message
 
 from database import dbname
 from misskaty import app
-from misskaty.helper import Cache, Kusonime, fetch, use_chat_lang, post_to_telegraph
+from misskaty.helper import Cache, Kusonime, fetch, post_to_telegraph, use_chat_lang
 
 __MODULE__ = "WebScraper"
 __HELP__ = """
@@ -76,28 +76,28 @@ async def getDataTerbit21(msg, kueri, CurrentPage, strings):
         with contextlib.redirect_stdout(sys.stderr):
             try:
                 if kueri:
-                    terbitjson = await fetch.get(f"{web['yasirapi']}/terbit21?q={kueri}")
+                    terbitjson = await fetch.get(
+                        f"{web['yasirapi']}/terbit21?q={kueri}"
+                    )
                 else:
                     terbitjson = await fetch.get(f"{web['yasirapi']}/terbit21")
                 terbitjson.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>")
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>"
+                )
                 return None, None
         res = terbitjson.json()
         if not res.get("result"):
             await msg.edit_msg(strings("no_result"), del_in=5)
             return None, None
-        SCRAP_DICT.add(
-            msg.id, [split_arr(res["result"], 6), kueri], timeout=1800
-        )
+        SCRAP_DICT.add(msg.id, [split_arr(res["result"], 6), kueri], timeout=1800)
     index = int(CurrentPage - 1)
     PageLen = len(SCRAP_DICT[msg.id][0])
     if kueri:
         TerbitRes = strings("header_with_query").format(web="Terbit21", kueri=kueri)
     else:
-        TerbitRes = strings("header_no_query").format(
-            web="Terbit21", cmd="terbit21"
-        )
+        TerbitRes = strings("header_no_query").format(web="Terbit21", cmd="terbit21")
     for c, i in enumerate(SCRAP_DICT[msg.id][0][index], start=1):
         TerbitRes += f"<b>{index*6+c}. <a href='{i['link']}'>{i['judul']}</a></b>\n<b>{strings('cat_text')}:</b> <code>{i['kategori']}</code>\n"
         TerbitRes += (
@@ -119,7 +119,9 @@ async def getDatalk21(msg, kueri, CurrentPage, strings):
                     lk21json = await fetch.get(f"{web['yasirapi']}/lk21")
                 lk21json.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>")
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>"
+                )
                 return None, None
         res = lk21json.json()
         if not res.get("result"):
@@ -129,9 +131,7 @@ async def getDatalk21(msg, kueri, CurrentPage, strings):
     index = int(CurrentPage - 1)
     PageLen = len(SCRAP_DICT[msg.id][0])
     if kueri:
-        lkResult = strings("header_with_query").format(
-            web="Layarkaca21", kueri=kueri
-        )
+        lkResult = strings("header_with_query").format(web="Layarkaca21", kueri=kueri)
     else:
         lkResult = strings("header_no_query").format(web="Layarkaca21", cmd="lk21")
     for c, i in enumerate(SCRAP_DICT[msg.id][0][index], start=1):
@@ -155,7 +155,9 @@ async def getDataPahe(msg, kueri, CurrentPage, strings):
                     pahejson = await fetch.get(f"{web['yasirapi']}/pahe")
                 pahejson.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>")
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>"
+                )
                 return None, None
         res = pahejson.json()
         if not res.get("result"):
@@ -170,9 +172,7 @@ async def getDataPahe(msg, kueri, CurrentPage, strings):
         else strings("header_no_query").format(web="Pahe", cmd="pahe")
     )
     for c, i in enumerate(SCRAP_DICT[msg.id][0][index], start=1):
-        paheResult += (
-            f"<b>{index*6+c}. <a href='{i['link']}'>{i['judul']}</a></b>\n\n"
-        )
+        paheResult += f"<b>{index*6+c}. <a href='{i['link']}'>{i['judul']}</a></b>\n\n"
     return paheResult, PageLen
 
 
@@ -187,7 +187,10 @@ async def getDataKuso(msg, kueri, CurrentPage, user, strings):
                 )
                 data.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>", disable_web_page_preview=True)
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
                 return None, 0, None, None
         res = BeautifulSoup(data, "lxml").find_all("h2", {"class": "episodeye"})
         for i in res:
@@ -237,7 +240,9 @@ async def getDataMovieku(msg, kueri, CurrentPage, strings):
                 )
                 data.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>")
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>"
+                )
                 return None, None
         r = BeautifulSoup(data, "lxml")
         res = r.find_all(class_="bx")
@@ -271,11 +276,15 @@ async def getDataNodrakor(msg, kueri, CurrentPage, user, strings):
         with contextlib.redirect_stdout(sys.stderr):
             try:
                 data = await fetch.get(
-                    f"{web['nodrakor']}/?s={kueri}", follow_redirects=True,
+                    f"{web['nodrakor']}/?s={kueri}",
+                    follow_redirects=True,
                 )
                 data.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", disable_web_page_preview=True)
+                await msg.edit_msg(
+                    f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
                 return None, 0, None
         text = BeautifulSoup(data, "lxml")
         entry = text.find_all(class_="entry-header")
@@ -319,11 +328,15 @@ async def getDataSavefilm21(msg, kueri, CurrentPage, user, strings):
         with contextlib.redirect_stdout(sys.stderr):
             try:
                 data = await fetch.get(
-                    f"{web['savefilm21']}/?s={kueri}", follow_redirects=True,
+                    f"{web['savefilm21']}/?s={kueri}",
+                    follow_redirects=True,
                 )
                 data.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", disable_web_page_preview=True)
+                await msg.edit_msg(
+                    f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
                 return None, 0, None
         text = BeautifulSoup(data, "lxml")
         entry = text.find_all(class_="entry-header")
@@ -367,13 +380,17 @@ async def getDataLendrive(msg, kueri, CurrentPage, user, strings):
             try:
                 if kueri:
                     data = await fetch.get(
-                        f"{web['lendrive']}/?s={kueri}", follow_redirects=True,
+                        f"{web['lendrive']}/?s={kueri}",
+                        follow_redirects=True,
                     )
                 else:
                     data = await fetch.get(web["lendrive"], follow_redirects=True)
                 data.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>", disable_web_page_preview=True)
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
                 return None, 0, None
         res = BeautifulSoup(data, "lxml")
         lenddata = []
@@ -391,7 +408,12 @@ async def getDataLendrive(msg, kueri, CurrentPage, user, strings):
                 else o.find(class_="typez BD")
             )
             lenddata.append(
-                {"judul": title, "link": link, "quality": kualitas or "N/A", "status": status}
+                {
+                    "judul": title,
+                    "link": link,
+                    "quality": kualitas or "N/A",
+                    "status": status,
+                }
             )
         if not lenddata:
             await msg.edit_msg(strings("no_result"), del_in=5)
@@ -422,11 +444,15 @@ async def getDataMelong(msg, kueri, CurrentPage, user, strings):
         with contextlib.redirect_stdout(sys.stderr):
             try:
                 data = await fetch.get(
-                    f"{web['melongmovie']}/?s={kueri}", follow_redirects=True,
+                    f"{web['melongmovie']}/?s={kueri}",
+                    follow_redirects=True,
                 )
                 data.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", disable_web_page_preview=True)
+                await msg.edit_msg(
+                    f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
                 return None, 0, None
         bs4 = BeautifulSoup(data, "lxml")
         melongdata = []
@@ -472,7 +498,10 @@ async def getDataGomov(msg, kueri, CurrentPage, user, strings):
                 )
                 gomovv.raise_for_status()
             except httpx.HTTPError as exc:
-                await msg.edit_msg(f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>", disable_web_page_preview=True)
+                await msg.edit_msg(
+                    f"ERROR: Failed to fetch data from {exc.request.url} - <code>{exc}</code>",
+                    disable_web_page_preview=True,
+                )
                 return None, 0, None
         text = BeautifulSoup(gomovv, "lxml")
         entry = text.find_all(class_="entry-header")
@@ -543,8 +572,8 @@ async def getSame(msg, query, current_page, strings):
     PageLen = len(savedict[msg.id][0])
     sameresult = "".join(
         f"<b>{index * 6 + c}. <a href='{i['url']}'>{i['title']}</a>\n<b>Status:</b> {i['sta']}\n</b>Rating:</b> {i['rate']}\n\n"
-            for c, i in enumerate(savedict[msg.id][0][index], start=1)
-        )
+        for c, i in enumerate(savedict[msg.id][0][index], start=1)
+    )
     return sameresult, PageLen
 
 
@@ -1288,7 +1317,9 @@ async def kusonime_scrap(client, callback_query, strings):
     try:
         init_url = data_kuso.get(link, False)
         if init_url:
-            await callback_query.message.edit_msg(init_url.get("ph_url"), reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                init_url.get("ph_url"), reply_markup=keyboard
+            )
         tgh = await kuso.telegraph(link, client.me.username)
         data_kuso[link] = {"ph_url": tgh}
         return await callback_query.message.edit_msg(tgh, reply_markup=keyboard)
@@ -1333,9 +1364,14 @@ async def savefilm21_scrap(_, callback_query, strings):
                 strings("res_scrape").format(link=link, kl=res), reply_markup=keyboard
             )
         except httpx.HTTPError as exc:
-            await callback_query.message.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                reply_markup=keyboard,
+            )
         except Exception as err:
-            await callback_query.message.edit_msg(f"ERROR: {err}", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"ERROR: {err}", reply_markup=keyboard
+            )
 
 
 # NoDrakor DDL
@@ -1368,28 +1404,37 @@ async def nodrakorddl_scrap(_, callback_query, strings):
             html.raise_for_status()
             soup = BeautifulSoup(html.text, "lxml")
             if "/tv/" in link:
-                result = soup.find("div", {"entry-content entry-content-single"}).find_all("p")
+                result = soup.find(
+                    "div", {"entry-content entry-content-single"}
+                ).find_all("p")
                 msg = ""
                 for i in result:
                     msg += str(f"{i}\n")
                 link = await post_to_telegraph(False, "MissKaty NoDrakor", msg)
                 return await callback_query.message.edit_msg(
-                    strings("res_scrape").format(link=link, kl=link), reply_markup=keyboard
+                    strings("res_scrape").format(link=link, kl=link),
+                    reply_markup=keyboard,
                 )
             res = soup.find_all(class_="button button-shadow")
             res = "".join(f"{i.text}\n{i['href']}\n\n" for i in res)
             if len(res) > 3500:
                 link = await post_to_telegraph(False, "MissKaty NoDrakor", res)
                 return await callback_query.message.edit_msg(
-                    strings("res_scrape").format(link=link, kl=link), reply_markup=keyboard
+                    strings("res_scrape").format(link=link, kl=link),
+                    reply_markup=keyboard,
                 )
             await callback_query.message.edit_msg(
                 strings("res_scrape").format(link=link, kl=res), reply_markup=keyboard
             )
         except httpx.HTTPError as exc:
-            await callback_query.message.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                reply_markup=keyboard,
+            )
         except Exception as err:
-            await callback_query.message.edit_msg(f"ERROR: {err}", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"ERROR: {err}", reply_markup=keyboard
+            )
 
 
 # Scrape Link Download Movieku.CC
@@ -1412,14 +1457,18 @@ async def muviku_scrap(_, message, strings):
                     data.append({"link": link, "kualitas": kualitas})
             if not data:
                 return await message.reply(strings("no_result"))
-            res = "".join(f"<b>Host: {i['kualitas']}</b>\n{i['link']}\n\n" for i in data)
+            res = "".join(
+                f"<b>Host: {i['kualitas']}</b>\n{i['link']}\n\n" for i in data
+            )
             await message.reply(res)
         except IndexError:
             return await message.reply(
                 strings("invalid_cmd_scrape").format(cmd=message.command[0])
             )
         except httpx.HTTPError as exc:
-            await message.reply(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>")
+            await message.reply(
+                f"HTTP Exception for {exc.request.url} - <code>{exc}</code>"
+            )
         except Exception as e:
             await message.reply(f"ERROR: {str(e)}")
 
@@ -1462,9 +1511,14 @@ async def melong_scrap(_, callback_query, strings):
                 strings("res_scrape").format(link=link, kl=rep), reply_markup=keyboard
             )
         except httpx.HTTPError as exc:
-            await callback_query.message.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                reply_markup=keyboard,
+            )
         except Exception as err:
-            await callback_query.message.edit_msg(f"ERROR: {err}", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"ERROR: {err}", reply_markup=keyboard
+            )
 
 
 # Scrape DDL Link Gomov
@@ -1506,9 +1560,14 @@ async def gomov_dl(_, callback_query, strings):
                 strings("res_scrape").format(link=link, kl=hasil), reply_markup=keyboard
             )
         except httpx.HTTPError as exc:
-            await callback_query.message.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                reply_markup=keyboard,
+            )
         except Exception as err:
-            await callback_query.message.edit_msg(f"ERROR: {err}", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"ERROR: {err}", reply_markup=keyboard
+            )
 
 
 @app.on_cb("lendriveextract#")
@@ -1544,12 +1603,18 @@ async def lendrive_dl(_, callback_query, strings):
                     continue
                 kl += f"{i.find('strong')}:\n"
                 kl += "".join(
-                    f"[ <a href='{a.get('href')}'>{a.text}</a> ]\n" for a in i.findAll("a")
+                    f"[ <a href='{a.get('href')}'>{a.text}</a> ]\n"
+                    for a in i.findAll("a")
                 )
             await callback_query.message.edit_msg(
                 strings("res_scrape").format(link=link, kl=kl), reply_markup=keyboard
             )
         except httpx.HTTPError as exc:
-            await callback_query.message.edit_msg(f"HTTP Exception for {exc.request.url} - <code>{exc}</code>", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"HTTP Exception for {exc.request.url} - <code>{exc}</code>",
+                reply_markup=keyboard,
+            )
         except Exception as err:
-            await callback_query.message.edit_msg(f"ERROR: {err}", reply_markup=keyboard)
+            await callback_query.message.edit_msg(
+                f"ERROR: {err}", reply_markup=keyboard
+            )
