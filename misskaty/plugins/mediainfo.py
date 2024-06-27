@@ -4,6 +4,7 @@
  * @projectName   MissKatyPyro
  * Copyright @YasirPedia All rights reserved
 """
+
 import io
 import subprocess
 import time
@@ -66,7 +67,9 @@ DETAILS
             )
         except:
             try:
-                link = await post_to_telegraph(False, "MissKaty MediaInfo", f"<code>{body_text}</code>")
+                link = await post_to_telegraph(
+                    False, "MissKaty MediaInfo", f"<code>{body_text}</code>"
+                )
                 markup = InlineKeyboardMarkup(
                     [[InlineKeyboardButton(text=strings("viweb"), url=link)]]
                 )
@@ -76,7 +79,13 @@ DETAILS
             out_file.name = "MissKaty_Mediainfo.txt"
             await ctx.reply_document(
                 out_file,
-                caption=strings("capt_media").format(ment=ctx.from_user.mention if ctx.from_user else ctx.sender_chat.title),
+                caption=strings("capt_media").format(
+                    ment=(
+                        ctx.from_user.mention
+                        if ctx.from_user
+                        else ctx.sender_chat.title
+                    )
+                ),
                 thumb="assets/thumb.jpg",
                 reply_markup=markup,
             )
@@ -119,7 +128,13 @@ DETAILS
                 out_file.name = "MissKaty_Mediainfo.txt"
                 await ctx.reply_document(
                     out_file,
-                    caption=strings("capt_media").format(ment=ctx.from_user.mention if ctx.from_user else ctx.sender_chat.title),
+                    caption=strings("capt_media").format(
+                        ment=(
+                            ctx.from_user.mention
+                            if ctx.from_user
+                            else ctx.sender_chat.title
+                        )
+                    ),
                     thumb="assets/thumb.jpg",
                     reply_markup=markup,
                 )

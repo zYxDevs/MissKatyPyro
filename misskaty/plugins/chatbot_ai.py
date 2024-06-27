@@ -6,7 +6,7 @@ import asyncio
 import html
 import random
 
-from openai import AsyncOpenAI, APIConnectionError, RateLimitError, APIStatusError
+from openai import APIConnectionError, APIStatusError, AsyncOpenAI, RateLimitError
 from pyrogram import filters
 from pyrogram.errors import MessageTooLong
 from pyrogram.types import Message
@@ -14,8 +14,7 @@ from pyrogram.types import Message
 from misskaty import app
 from misskaty.core import pyro_cooldown
 from misskaty.helper import check_time_gap, fetch, post_to_telegraph, use_chat_lang
-from misskaty.vars import GOOGLEAI_KEY, COMMAND_HANDLER, OPENAI_KEY, SUDO
-
+from misskaty.vars import COMMAND_HANDLER, GOOGLEAI_KEY, OPENAI_KEY, SUDO
 
 __MODULE__ = "ChatBot"
 __HELP__ = """
@@ -25,7 +24,9 @@ __HELP__ = """
 
 
 @app.on_message(filters.command("ai", COMMAND_HANDLER) & pyro_cooldown.wait(10))
-@app.on_bot_business_message(filters.command("ai", COMMAND_HANDLER) & pyro_cooldown.wait(10))
+@app.on_bot_business_message(
+    filters.command("ai", COMMAND_HANDLER) & pyro_cooldown.wait(10)
+)
 @use_chat_lang()
 async def gemini_chatbot(_, ctx: Message, strings):
     if len(ctx.command) == 1:
@@ -39,13 +40,17 @@ async def gemini_chatbot(_, ctx: Message, strings):
         data = {
             "query": ctx.text.split(maxsplit=1)[1],
         }
-        response = await fetch.post(
-            "https://yasirapi.eu.org/gemini", data=data
-        )
+        response = await fetch.post("https://yasirapi.eu.org/gemini", data=data)
         if not response.json().get("candidates"):
-            await ctx.reply_msg("⚠️ Sorry, the prompt you sent maybe contains a forbidden word that is not permitted by AI.")
+            await ctx.reply_msg(
+                "⚠️ Sorry, the prompt you sent maybe contains a forbidden word that is not permitted by AI."
+            )
         else:
-            await ctx.reply_msg(html.escape(response.json()["candidates"][0]["content"]["parts"][0]["text"]))
+            await ctx.reply_msg(
+                html.escape(
+                    response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                )
+            )
         await msg.delete()
     except Exception as e:
         await ctx.reply_msg(str(e))
@@ -99,9 +104,13 @@ async def openai_chatbot(_, ctx: Message, strings):
         await msg.edit_msg(f"The server could not be reached because {e.__cause__}")
     except RateLimitError as e:
         if "billing details" in str(e):
-            return await msg.edit_msg("This openai key from this bot has expired, please give openai key donation for bot owner.")
+            return await msg.edit_msg(
+                "This openai key from this bot has expired, please give openai key donation for bot owner."
+            )
         await msg.edit_msg("You're got rate limit, please try again later.")
     except APIStatusError as e:
-        await msg.edit_msg(f"Another {e.status_code} status code was received with response {e.response}")
+        await msg.edit_msg(
+            f"Another {e.status_code} status code was received with response {e.response}"
+        )
     except Exception as e:
         await msg.edit_msg(f"ERROR: {e}")

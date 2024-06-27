@@ -141,13 +141,13 @@ async def search_jw(movie_name: str, locale: Union[str, None] = "ID"):
         return m_t_
     for item in response["results"]["data"]["popularTitles"]["edges"]:
         if item["node"]["content"]["title"] == movie_name:
-           t_m_ = []
-           for offer in item["node"].get("offers", []):
-             url = offer["standardWebURL"]
-             if url not in t_m_:
-                 p_o = get_provider(url)
-                 m_t_ += f"<a href='{url}'>{p_o}</a> | "
-             t_m_.append(url)
+            t_m_ = []
+            for offer in item["node"].get("offers", []):
+                url = offer["standardWebURL"]
+                if url not in t_m_:
+                    p_o = get_provider(url)
+                    m_t_ += f"<a href='{url}'>{p_o}</a> | "
+                t_m_.append(url)
         if m_t_ != "":
             m_t_ = m_t_[:-2].strip()
         break
@@ -155,16 +155,18 @@ async def search_jw(movie_name: str, locale: Union[str, None] = "ID"):
 
 
 def isValidURL(str):
-    # Regex to check valid URL 
-    regex = ("((http|https)://)(www.)?" +
-             "[a-zA-Z0-9@:%._\\+~#?&//=]" +
-             "{2,256}\\.[a-z]" +
-             "{2,6}\\b([-a-zA-Z0-9@:%" +
-             "._\\+~#?&//=]*)")
+    # Regex to check valid URL
+    regex = (
+        "((http|https)://)(www.)?"
+        + "[a-zA-Z0-9@:%._\\+~#?&//=]"
+        + "{2,256}\\.[a-z]"
+        + "{2,6}\\b([-a-zA-Z0-9@:%"
+        + "._\\+~#?&//=]*)"
+    )
 
     # Compile the ReGex
     p = re.compile(regex)
 
-    # If the string is empty 
+    # If the string is empty
     # return false
     return False if str is None else bool((re.search(p, str)))
