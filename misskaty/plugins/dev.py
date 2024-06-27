@@ -5,23 +5,22 @@ import io
 import json
 import os
 import pickle
+import platform
 import re
 import sys
 import traceback
 from datetime import datetime
 from inspect import getfullargspec
+from logging import getLogger
 from shutil import disk_usage
 from time import time
 from typing import Any, Optional, Tuple
 
 import aiohttp
-import contextlib
 import cloudscraper
 import requests
-import platform
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bs4 import BeautifulSoup
-from logging import getLogger
 from PIL import Image, ImageDraw, ImageFont
 from psutil import Process, boot_time, cpu_count, cpu_percent
 from psutil import disk_usage as disk_usage_percent
@@ -29,7 +28,14 @@ from psutil import net_io_counters, virtual_memory
 from pyrogram import Client
 from pyrogram import __version__ as pyrover
 from pyrogram import enums, filters
-from pyrogram.errors import ChatSendPhotosForbidden, FloodWait, MessageTooLong, PeerIdInvalid, ChatSendPlainForbidden, ReactionInvalid
+from pyrogram.errors import (
+    ChatSendPhotosForbidden,
+    ChatSendPlainForbidden,
+    FloodWait,
+    MessageTooLong,
+    PeerIdInvalid,
+    ReactionInvalid,
+)
 from pyrogram.raw.types import UpdateBotStopped
 from pyrogram.types import (
     InlineKeyboardButton,
@@ -92,8 +98,12 @@ async def log_file(_, ctx: Message, strings):
             data = {
                 "value": content,
             }
-            pastelog = await fetch.post("https://paste.yasirapi.eu.org/save", data=data, follow_redirects=True)
-            await msg.edit_msg(f"<a href='{pastelog.url}'>Here the Logs</a>\nlog size: {get_readable_file_size(os.path.getsize('MissKatyLogs.txt'))}")
+            pastelog = await fetch.post(
+                "https://paste.yasirapi.eu.org/save", data=data, follow_redirects=True
+            )
+            await msg.edit_msg(
+                f"<a href='{pastelog.url}'>Here the Logs</a>\nlog size: {get_readable_file_size(os.path.getsize('MissKatyLogs.txt'))}"
+            )
         except Exception:
             await ctx.reply_document(
                 "MissKatyLogs.txt",
@@ -134,7 +144,10 @@ async def donate(self: Client, ctx: Message):
             caption="Hi, If you find this bot useful, you can make a donation to the account below. Because this bot server uses VPS and is not free. Thank You..\n\n<b>Indonesian Payment:</b>\n<b>QRIS:</b> https://img.yasirweb.eu.org/file/ee74ce527fb8264b54691.jpg (Yasir Store)\n<b>Bank Jago:</b> 109641845083 (Yasir Aris M)\n\nFor international people can use PayPal to support me or via GitHub Sponsor:\nhttps://paypal.me/yasirarism\nhttps://github.com/sponsors/yasirarism\n\n<b>Source:</b> @BeriKopi",
         )
     except (ChatSendPlainForbidden, ChatSendPhotosForbidden):
-        await self.send_message(LOG_CHANNEL, f"❗️ <b>WARNING</b>\nI'm leaving from {ctx.chat.id} since i didn't have sufficient admin permissions.")
+        await self.send_message(
+            LOG_CHANNEL,
+            f"❗️ <b>WARNING</b>\nI'm leaving from {ctx.chat.id} since i didn't have sufficient admin permissions.",
+        )
         await ctx.chat.leave()
 
 
@@ -182,7 +195,7 @@ async def server_stats(_, ctx: Message) -> "Message":
 
     if "oracle" in platform.uname().release:
         return await ctx.reply_msg(caption, quote=True)
-        
+
     start = datetime.now()
     msg = await ctx.reply_photo(
         photo="https://te.legra.ph/file/30a82c22854971d0232c7.jpg",
@@ -194,7 +207,7 @@ async def server_stats(_, ctx: Message) -> "Message":
     image = Image.open("assets/statsbg.jpg").convert("RGB")
     IronFont = ImageFont.truetype("assets/IronFont.otf", 42)
     draw = ImageDraw.Draw(image)
-    
+
     def draw_progressbar(coordinate, progress):
         progress = 110 + (progress * 10.8)
         draw.ellipse((105, coordinate - 25, 127, coordinate), fill="#FFFFFF")
@@ -202,7 +215,7 @@ async def server_stats(_, ctx: Message) -> "Message":
         draw.ellipse(
             (progress - 7, coordinate - 25, progress + 15, coordinate), fill="#FFFFFF"
         )
-    
+
     draw_progressbar(243, int(cpu_percentage))
     draw.text(
         (225, 153),
@@ -332,7 +345,9 @@ async def unban_globally(_, ctx: Message):
     filters.command(["shell", "sh", "term"], COMMAND_HANDLER) & filters.user(SUDO)
 )
 @app.on_edited_message(
-    filters.command(["shell", "sh", "term"], COMMAND_HANDLER) & filters.user(SUDO) & ~filters.react
+    filters.command(["shell", "sh", "term"], COMMAND_HANDLER)
+    & filters.user(SUDO)
+    & ~filters.react
 )
 @user.on_message(filters.command(["shell", "sh", "term"], ".") & filters.me)
 @use_chat_lang()
@@ -394,8 +409,12 @@ async def shell_cmd(_, ctx: Message, strings):
     & filters.user(SUDO)
 )
 @app.on_edited_message(
-    (filters.command(["ev", "run", "meval"], COMMAND_HANDLER) | filters.regex(r"app.run\(\)$"))
-    & filters.user(SUDO) & ~filters.react
+    (
+        filters.command(["ev", "run", "meval"], COMMAND_HANDLER)
+        | filters.regex(r"app.run\(\)$")
+    )
+    & filters.user(SUDO)
+    & ~filters.react
 )
 @user.on_message(filters.command(["ev", "run", "meval"], ".") & filters.me)
 @use_chat_lang()
@@ -407,9 +426,7 @@ async def cmd_eval(self: Client, ctx: Message, strings) -> Optional[str]:
         if ctx.from_user.is_self
         else await ctx.reply_msg(strings("run_eval"), quote=True)
     )
-    code = (
-        ctx.text.split(maxsplit=1)[1] if ctx.command else msg.split("\napp.run()")[0]
-    )
+    code = ctx.text.split(maxsplit=1)[1] if ctx.command else msg.split("\napp.run()")[0]
     out_buf = io.StringIO()
     out = ""
     humantime = get_readable_time

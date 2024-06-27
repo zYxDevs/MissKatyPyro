@@ -77,7 +77,7 @@ def calcExpression(text):
     except (SyntaxError, ZeroDivisionError):
         return ""
     except TypeError:
-        return float(eval(text.replace('(', '*(')))
+        return float(eval(text.replace("(", "*(")))
     except Exception as e:
         logger.error(e, exc_info=True)
         return ""
@@ -128,8 +128,9 @@ async def calculate_handler(self, ctx):
         text=f"Made by @{self.me.username}",
         reply_markup=calc_btn(ctx.from_user.id),
         disable_web_page_preview=True,
-        quote=True
+        quote=True,
     )
+
 
 @app.on_callback_query(filters.regex("^calc"))
 async def calc_cb(self, query):
@@ -138,7 +139,7 @@ async def calc_cb(self, query):
         return await query.answer("Who are you??", show_alert=True, cache_time=5)
     try:
         text = query.message.text.split("\n")[0].strip().split("=")[0].strip()
-        text = '' if f"Made by @{self.me.username}" in text else text
+        text = "" if f"Made by @{self.me.username}" in text else text
         inpt = text + query.data
         result = ""
         if data == "=":
@@ -166,10 +167,11 @@ async def calc_cb(self, query):
         await query.message.edit_msg(
             text=text,
             disable_web_page_preview=True,
-            reply_markup=calc_btn(query.from_user.id)
+            reply_markup=calc_btn(query.from_user.id),
         )
     except Exception as error:
         LOGGER.error(error)
+
 
 @app.on_cmd("kbbi")
 async def kbbi_search(_, ctx: Client):
