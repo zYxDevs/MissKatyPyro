@@ -34,7 +34,7 @@
 
 ## [2] Framework Tools And Server That Used To Build This Bot
  🌱 PyroFork v2.x.x (Fork of Pyrogram with Topics, Stories Support and Some Patch)<br>
- 🌱 Python 3.11 Support<br>
+ 🌱 Python 3.12 Support<br>
  🌱 MongoDB as Database<br>
  🌱 PyKeyboard for Building Pagination<br>
  🌱 VS Code<br>
@@ -43,7 +43,6 @@
 ## [3] Donation and Support
 *For Indonesian Only and some supported country:*<br>
  🌱 [QRIS][qris-url]<br>
- 🌱 [Mayar ID][mayar]<br>
 
 *For International Payment:*<br>
  🌱 [Paypal][paypal-url]<br>
@@ -84,14 +83,14 @@ If you want help me fixing some error in my bot, you can make pull request to th
 * `DATABASE_NAME`: Name of the database in MongoDB
 * `COMMAND_HANDLER`: List of handler bot command splitted by space. Ex: `. !` > so bot will respond with `.cmd` or `!cmd`
 * `SUDO`: User ID that have access to bot, split by space
-* `OPENAI_API`: Get it from OpenAI Web
-* `BARD_API`: Learn from this https://github.com/dsdanielpark/Bard-API to get cookies and set it as api key.
+* `SHUTTLEAI_KEY`: Get api key from https://shuttleai.app/keys
+* `GOOGLEAI_KEY`: Learn how to get api key from this https://ai.google.dev/tutorials/python_quickstart?hl=en.
 * `CURRENCY_API`: Get API Key from https://app.exchangerate-api.com/sign-up
 
 ## [7] Tutorial Deploy (Recommended using Docker/Docker Compose)
 
 #### Build And Run Using Legacy Method
-- Make sure minimum python version is 3.8 and max python 3.11 to prevent some errors. Check it with this command:
+- Make sure minimum python version is 3.8 and max python 3.12 to prevent some errors. Check it with this command:
 ```
 python3 --version
 ```
@@ -99,12 +98,12 @@ python3 --version
 ```
 apt update -y & apt install libjpeg-dev zlib1g-dev libwebp-dev python3-pip python3-lxml git wget curl ffmpeg locales tzdata neofetch mediainfo speedtest-cli -y
 ```
-- Install requirements.txt, if using python 3.11, you need use venv when install pip package.<br/>
+- Install requirements.txt, if using python => 3.11, you need use venv when install pip package.<br/>
 *Python < 3.10*
 ```
 pip3 install -r requirements.txt
 ```
-*Python 3.11*
+*Python => 3.11*
 ```
 python3 -m venv nama_venv
 source nama_venv/bin/activate
@@ -186,7 +185,7 @@ WARNING: Selling The Codes To Other People For Money Is *Strictly Prohibited*. O
 <!--Url for Buttons-->
 [readme-ko-shield]: https://img.shields.io/badge/-readme%20in%20Indonesian-2E2E2E?style=for-the-badge
 [view-demo-shield]: https://img.shields.io/badge/-%F0%9F%98%8E%20view%20demo-F3F781?style=for-the-badge
-[view-demo-url]: https://t.me/MissKatyPyro
+[view-demo-url]: https://t.me/MissKatyBot
 [report-bug-shield]: https://img.shields.io/badge/-%F0%9F%90%9E%20report%20bug-F5A9A9?style=for-the-badge
 [report-bug-url]: https://github.com/yasirarism/MissKatyPyro/issues
 [request-feature-shield]: https://img.shields.io/badge/-%E2%9C%A8%20request%20feature-A9D0F5?style=for-the-badge
@@ -196,7 +195,7 @@ WARNING: Selling The Codes To Other People For Money Is *Strictly Prohibited*. O
 [readme-ko-url]: README.id.md
 [kofi-url]: https://ko-fi.com/yasirarism
 [paypal-url]: https://paypal.me/yasirarism
-[qris-url]: https://img.yasirweb.eu.org/file/9427d61d6968b8ee4fb2f.jpg
+[qris-url]: https://img.yasirweb.eu.org/file/ee74ce527fb8264b54691.jpg
 [mayar]: https://yasirarism.mayar.link/payme
 [sociabuzz-url]: https://sociabuzz.com/yasirarism/tribe
 [saweria-url]: https://saweria.co/yasirarism

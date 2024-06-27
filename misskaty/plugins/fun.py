@@ -204,7 +204,7 @@ async def givereact(c, m):
         return await m.reply("Please add reaction after command, you can give multiple reaction too.")
     if not m.reply_to_message:
         return await m.reply("Please reply to the message you want to react to.")
-    emot = [emoji for emoji in regex.findall(r'\p{Emoji}', m.text)]
+    emot = list(regex.findall(r'\p{Emoji}', m.text))
     try:
         await m.reply_to_message.react(emoji=emot)
     except ReactionInvalid:
@@ -215,3 +215,8 @@ async def givereact(c, m):
         await m.reply("Sorry, i can't react chat without join that groups.")
     except Exception as err:
         await m.reply(str(err))
+
+
+# @app.on_message_reaction_updated(filters.chat(-1001777794636))
+async def reaction_update(self, ctx):
+    self.log.info(ctx)

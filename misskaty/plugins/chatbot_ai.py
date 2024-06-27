@@ -14,32 +14,42 @@ from pyrogram.types import Message
 from misskaty import app
 from misskaty.core import pyro_cooldown
 from misskaty.helper import check_time_gap, fetch, post_to_telegraph, use_chat_lang
-from misskaty.vars import BARD_API, COMMAND_HANDLER, OPENAI_API, SUDO
+from misskaty.vars import GOOGLEAI_KEY, COMMAND_HANDLER, OPENAI_KEY, SUDO
 
 
-# This only for testing things, since maybe in future it will got blocked
-@app.on_message(filters.command("bard", COMMAND_HANDLER) & pyro_cooldown.wait(10))
+__MODULE__ = "ChatBot"
+__HELP__ = """
+/ai - Generate text response from AI using Gemini AI By Google.
+/ask - Generate text response from AI using OpenAI.
+"""
+
+
+@app.on_message(filters.command("ai", COMMAND_HANDLER) & pyro_cooldown.wait(10))
+@app.on_bot_business_message(filters.command("ai", COMMAND_HANDLER) & pyro_cooldown.wait(10))
 @use_chat_lang()
-async def bard_chatbot(_, ctx: Message, strings):
+async def gemini_chatbot(_, ctx: Message, strings):
     if len(ctx.command) == 1:
         return await ctx.reply_msg(
             strings("no_question").format(cmd=ctx.command[0]), quote=True, del_in=5
         )
-    if not BARD_API:
-        return await ctx.reply_msg("BARD_API env is missing!!!")
+    if not GOOGLEAI_KEY:
+        return await ctx.reply_msg("GOOGLEAI_KEY env is missing!!!")
     msg = await ctx.reply_msg(strings("find_answers_str"), quote=True)
     try:
-        req = await fetch.get(
-            f"https://yasirapi.eu.org/bard?input={ctx.text.split(maxsplit=1)[1]}&key={BARD_API}"
+        data = {
+            "query": ctx.text.split(maxsplit=1)[1],
+        }
+        response = await fetch.post(
+            "https://yasirapi.eu.org/gemini", data=data
         )
-        random_choice = random.choice(req.json().get("choices"))
-        await msg.edit_msg(
-            html.escape(random_choice["content"][0])
-            if req.json().get("content") != ""
-            else "Failed getting data from Bard"
-        )
+        if not response.json().get("candidates"):
+            await ctx.reply_msg("⚠️ Sorry, the prompt you sent maybe contains a forbidden word that is not permitted by AI.")
+        else:
+            await ctx.reply_msg(html.escape(response.json()["candidates"][0]["content"]["parts"][0]["text"]))
+        await msg.delete()
     except Exception as e:
-        await msg.edit_msg(str(e))
+        await ctx.reply_msg(str(e))
+        await msg.delete()
 
 
 @app.on_message(filters.command("ask", COMMAND_HANDLER) & pyro_cooldown.wait(10))
@@ -49,20 +59,20 @@ async def openai_chatbot(_, ctx: Message, strings):
         return await ctx.reply_msg(
             strings("no_question").format(cmd=ctx.command[0]), quote=True, del_in=5
         )
-    if not OPENAI_API:
-        return await ctx.reply_msg("OPENAI_API env is missing!!!")
+    if not OPENAI_KEY:
+        return await ctx.reply_msg("OPENAI_KEY env is missing!!!")
     uid = ctx.from_user.id if ctx.from_user else ctx.sender_chat.id
     is_in_gap, _ = await check_time_gap(uid)
     if is_in_gap and (uid not in SUDO):
         return await ctx.reply_msg(strings("dont_spam"), del_in=5)
-    ai = AsyncOpenAI(api_key=OPENAI_API)
+    ai = AsyncOpenAI(api_key=OPENAI_KEY, base_url="https://api.aimlapi.com")
     pertanyaan = ctx.input
     msg = await ctx.reply_msg(strings("find_answers_str"), quote=True)
     num = 0
     answer = ""
     try:
         response = await ai.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[{"role": "user", "content": pertanyaan}],
             temperature=0.7,
             stream=True,
@@ -88,7 +98,9 @@ async def openai_chatbot(_, ctx: Message, strings):
     except APIConnectionError as e:
         await msg.edit_msg(f"The server could not be reached because {e.__cause__}")
     except RateLimitError as e:
-        await msg.edit_msg("A 429 status code was received; we should back off a bit.")
+        if "billing details" in str(e):
+            return await msg.edit_msg("This openai key from this bot has expired, please give openai key donation for bot owner.")
+        await msg.edit_msg("You're got rate limit, please try again later.")
     except APIStatusError as e:
         await msg.edit_msg(f"Another {e.status_code} status code was received with response {e.response}")
     except Exception as e:

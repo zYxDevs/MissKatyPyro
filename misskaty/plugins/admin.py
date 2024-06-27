@@ -90,7 +90,7 @@ __HELP__ = """
 
 
 # Admin cache reload
-@app.on_chat_member_updated()
+@app.on_chat_member_updated(filters.group, group=5)
 async def admin_cache_func(_, cmu):
     if cmu.old_chat_member and cmu.old_chat_member.promoted_by:
         try:
@@ -634,10 +634,10 @@ async def warn_user(client, message, strings):
 
 @app.on_callback_query(filters.regex("unwarn_"))
 @use_chat_lang()
-async def remove_warning(client, cq, strings):
+async def remove_warning(_, cq, strings):
     from_user = cq.from_user
     chat_id = cq.message.chat.id
-    permissions = await member_permissions(chat_id, from_user.id, client)
+    permissions = await member_permissions(chat_id, from_user.id)
     permission = "can_restrict_members"
     if permission not in permissions:
         return await cq.answer(
@@ -664,10 +664,10 @@ async def remove_warning(client, cq, strings):
 
 @app.on_callback_query(filters.regex("unmute_"))
 @use_chat_lang()
-async def unmute_user(client, cq, strings):
+async def unmute_user(_, cq, strings):
     from_user = cq.from_user
     chat_id = cq.message.chat.id
-    permissions = await member_permissions(chat_id, from_user.id, client)
+    permissions = await member_permissions(chat_id, from_user.id)
     permission = "can_restrict_members"
     if permission not in permissions:
         return await cq.answer(
@@ -687,10 +687,10 @@ async def unmute_user(client, cq, strings):
 
 @app.on_callback_query(filters.regex("unban_"))
 @use_chat_lang()
-async def unban_user(client, cq, strings):
+async def unban_user(_, cq, strings):
     from_user = cq.from_user
     chat_id = cq.message.chat.id
-    permissions = await member_permissions(chat_id, from_user.id, client)
+    permissions = await member_permissions(chat_id, from_user.id)
     permission = "can_restrict_members"
     if permission not in permissions:
         return await cq.answer(
@@ -863,7 +863,6 @@ async def set_chat_photo(_, ctx: Message):
 
 @app.on_message(filters.group & filters.command('mentionall', COMMAND_HANDLER))
 async def mentionall(app: Client, msg: Message):
-    NUM = 4
     user = await msg.chat.get_member(msg.from_user.id)
     if user.status in (enums.ChatMemberStatus.OWNER, enums.ChatMemberStatus.ADMINISTRATOR):
         total = []
@@ -874,6 +873,7 @@ async def mentionall(app: Client, msg: Message):
             else:
                 total.append(member.user.mention())
 
+        NUM = 4
         for i in range(0, len(total), NUM):
             message = ' '.join(total[i:i+NUM])
             await app.send_message(msg.chat.id, message, message_thread_id=msg.message_thread_id)
